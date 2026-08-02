@@ -15,6 +15,13 @@
         {
           "backgroundColor": "#FAF8F3"
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "ios": {
