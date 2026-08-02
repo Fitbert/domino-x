@@ -10,16 +10,19 @@ import { useFonts } from 'expo-font';
 
 import { colors } from '../src/theme/tokens';
 import { useGameStore } from '../src/store/gameStore';
+import { useSettingsStore } from '../src/store/settingsStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const hydrate = useGameStore((s) => s.hydrate);
+  const hydrateSettings = useSettingsStore((s) => s.hydrate);
   const [fontsLoaded] = useFonts({});
 
   useEffect(() => {
     hydrate();
-  }, [hydrate]);
+    hydrateSettings();
+  }, [hydrate, hydrateSettings]);
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
