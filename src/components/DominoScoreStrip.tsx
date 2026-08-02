@@ -1,37 +1,70 @@
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { SlideInRight } from 'react-native-reanimated';
 
-import { BLOCK_VALUE, STROKES_PER_BLOCK, completedBlocks, strokesInCurrentBlock } from '../domino/constants';
+import { completedBlocks, strokesInCurrentBlock, STROKES_PER_BLOCK } from '../domino/constants';
+import { spacing } from '../theme/tokens';
+import { MOTION } from '../animation/motion';
 import { DominoX } from './DominoX';
 
 export interface DominoScoreStripProps {
   score: number;
 }
 
+const BLOCK_SIZE = 64;
+
 /**
- * The "living notebook": every completed 50-point block stays visible and
- * the strip grows as the game progresses. Placeholder lays out static
- * DominoX blocks; Vertical A adds progressive stroke-reveal animation,
- * complete-block pulse, and horizontal scroll/virtualization for long strips.
+ * The "living notebook": every completed 50-point block stays visible
+ * left-to-right and never disappears; a fresh, empty block is always
+ * present at the end of the strip, sliding in from the right the moment
+ * the previous one completes, ready to keep filling.
+ *
+ * Purely a function of `score` - each DominoX slot keeps a stable key
+ * across renders, so it animates its own stroke-by-stroke delta instead of
+ * remounting when the strip grows.
  */
 export function DominoScoreStrip({ score }: DominoScoreStripProps) {
-  const blocks = completedBlocks(score);
-  const currentStrokes = strokesInCurrentBlock(score);
-  const hasPartialBlock = score % BLOCK_VALUE !== 0 || score === 0;
+  const clampedScore = Math.max(0, score);
+  const completed = completedBlocks(clampedScore);
+  const currentStrokes = strokesInCurrentBlock(clampedScore);
+  // Always keep one trailing slot for the block currently filling (may be
+  // fully empty right after the previous block completes).
+  const totalSlots = completed + 1;
+
+  const scrollRef = useRef<ScrollView>(null);
+  const slotsRef = useRef(totalSlots);
+
+  useEffect(() => {
+    if (totalSlots !== slotsRef.current) {
+      slotsRef.current = totalSlots;
+      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+    }
+  }, [totalSlots]);
 
   return (
-    <View style={styles.row}>
-      {Array.from({ length: blocks }).map((_, i) => (
-        <DominoX key={i} strokes={STROKES_PER_BLOCK} />
+    <ScrollView
+      ref={scrollRef}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.row}
+    >
+      {Array.from({ length: totalSlots }).map((_, i) => (
+        <Animated.View key={i} entering={SlideInRight.duration(MOTION.newBlockSlideInMs)} style={styles.slot}>
+          <DominoX strokes={i < completed ? STROKES_PER_BLOCK : currentStrokes} size={BLOCK_SIZE} />
+        </Animated.View>
       ))}
-      {hasPartialBlock && <DominoX key="current" strokes={currentStrokes} />}
-    </View>
+      {/* Trailing spacer keeps the last block from hugging the scroll edge. */}
+      <View style={{ width: spacing.xs }} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
   },
+  slot: {},
 });
