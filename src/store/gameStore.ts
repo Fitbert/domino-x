@@ -10,9 +10,42 @@ function makePlayers(names: string[]): Player[] {
   return names.map((name) => ({ id: makeId(), name, score: 0, history: [] }));
 }
 
+// Monotonic timestamp source for ScoreEntry.timestamp. Two players can tap
+// a score button in the same millisecond (fast taps, or programmatic bulk
+// entry), and Date.now() alone can collide in that case. `undoLast()` picks
+// "the single most-recent entry across all players" by comparing this
+// timestamp, so a collision would make that choice ambiguous/non-deterministic.
+// Forcing strictly-increasing values here (without changing the ScoreEntry
+// shape, which is owned by src/types/domino.ts) removes the ambiguity for
+// every entry created during this process's lifetime. `lastTimestamp` resets
+// to 0 on cold start, but Date.now() is always far larger than any
+// previously-persisted timestamp, so ordering across a hydrate() boundary is
+// still preserved.
+let lastTimestamp = 0;
+function nextTimestamp(): number {
+  const now = Date.now();
+  lastTimestamp = now > lastTimestamp ? now : lastTimestamp + 1;
+  return lastTimestamp;
+}
+
+/** Info about the most recently undone entry, for a brief confirmation UI. */
+export interface UndoInfo {
+  playerId: string;
+  playerName: string;
+  amount: number;
+  timestamp: number;
+}
+
 interface GameStore {
   activeGame: GameConfig | null;
   completedGames: GameConfig[];
+  /**
+   * Additive: set by `undoLast()` right after it reverses an entry, so
+   * FloatingUndo / HistoryDrawer can show a "undid +N for Name" confirmation
+   * without duplicating the store's own "most recent entry" logic. Existing
+   * consumers that don't know about this field are unaffected.
+   */
+  lastUndone: UndoInfo | null;
 
   startGame: (options: NewGameOptions) => void;
   addScore: (playerId: string, amount: ScoreIncrement) => void;
@@ -20,6 +53,8 @@ interface GameStore {
   rematch: () => void;
   endActiveGame: () => void;
   hydrate: () => void;
+  /** Additive: dismiss the `lastUndone` confirmation once it's been shown. */
+  clearLastUndone: () => void;
 }
 
 function persistActiveGame(game: GameConfig | null) {
@@ -34,6 +69,7 @@ function persistCompletedGames(games: GameConfig[]) {
 export const useGameStore = create<GameStore>((set, get) => ({
   activeGame: null,
   completedGames: [],
+  lastUndone: null,
 
   hydrate: () => {
     const activeGame = loadJSON<GameConfig>(STORAGE_KEYS.activeGame);
@@ -52,7 +88,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       completedAt: null,
     };
     persistActiveGame(game);
-    set({ activeGame: game });
+    set({ activeGame: game, lastUndone: null });
   },
 
   addScore: (playerId, amount) => {
@@ -67,7 +103,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         playerId,
         amount,
         runningTotal,
-        timestamp: Date.now(),
+        timestamp: nextTimestamp(),
       };
       return { ...player, score: runningTotal, history: [...player.history, entry] };
     });
@@ -94,14 +130,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { activeGame } = get();
     if (!activeGame) return;
 
+    // Find the single most-recent ScoreEntry across all players. Each
+    // player's own history is already in insertion order, so only the last
+    // element per player is a candidate; entries are timestamped via
+    // nextTimestamp() (see above) which is strictly increasing for the
+    // lifetime of this process, so this comparison is deterministic even
+    // when two players are scored in the same millisecond. The `>=` (rather
+    // than `>`) fallback, combined with stable iteration order, also keeps
+    // behavior deterministic for any pre-existing persisted data that predates
+    // this guarantee and could in theory still carry equal timestamps.
     let latestEntry: ScoreEntry | null = null;
     for (const player of activeGame.players) {
       const last = player.history[player.history.length - 1];
-      if (last && (!latestEntry || last.timestamp > latestEntry.timestamp)) {
+      if (last && (!latestEntry || last.timestamp >= latestEntry.timestamp)) {
         latestEntry = last;
       }
     }
     if (!latestEntry) return;
+
+    const undonePlayer = activeGame.players.find((p) => p.id === latestEntry!.playerId) ?? null;
 
     const players = activeGame.players.map((player) => {
       if (player.id !== latestEntry!.playerId) return player;
@@ -111,7 +158,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     const updatedGame: GameConfig = { ...activeGame, players, winnerId: null, completedAt: null };
     persistActiveGame(updatedGame);
-    set({ activeGame: updatedGame });
+    set({
+      activeGame: updatedGame,
+      lastUndone: {
+        playerId: latestEntry.playerId,
+        playerName: undonePlayer?.name ?? '',
+        amount: latestEntry.amount,
+        timestamp: latestEntry.timestamp,
+      },
+    });
   },
 
   rematch: () => {
@@ -126,6 +181,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   endActiveGame: () => {
     persistActiveGame(null);
-    set({ activeGame: null });
+    set({ activeGame: null, lastUndone: null });
   },
+
+  clearLastUndone: () => set({ lastUndone: null }),
 }));
