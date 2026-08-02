@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { colors, radii, spacing, typography } from '../../src/theme/tokens';
@@ -8,62 +8,61 @@ import { NotebookHeader } from '../../src/components/NotebookHeader';
 import { tapLight } from '../../src/utils/haptics';
 import { useSetupWizard } from './_layout';
 
-function seedNames(setup: { playerCount: number; playerNames: string[] }): string[] {
-  if (setup.playerNames.length === setup.playerCount) return setup.playerNames;
-  return Array.from({ length: setup.playerCount }, (_, i) => `Player ${i + 1}`);
-}
-
-/** Step (3 or 4): who's playing — one text field per player, notebook-ruled. */
-export default function NamesStep() {
+/**
+ * Step 3 (teams mode only): name the teams. Since GameConfig has no separate
+ * team-grouping field, each team's name is folded into its players' names on
+ * the Names step (e.g. "Sharks · Alex") — a lightweight way to keep team
+ * identity visible on the scorecard without changing the locked data model.
+ */
+export default function TeamsStep() {
   const { setup, setPlayerNames } = useSetupWizard();
-  const isTeams = setup.mode === 'teams';
-  const totalSteps = isTeams ? 5 : 4;
-  const currentStep = isTeams ? 4 : 3;
+  const [teamNames, setTeamNames] = useState<string[]>(
+    Array.from({ length: setup.teamCount }, (_, i) => `Team ${i + 1}`),
+  );
 
-  const [names, setNames] = useState<string[]>(() => seedNames(setup));
-
-  const allFilled = names.every((n) => n.trim().length > 0);
+  const playersPerTeam = setup.playerCount / setup.teamCount;
 
   const handleNext = () => {
-    if (!allFilled) return;
     tapLight();
-    setPlayerNames(names.map((n) => n.trim()));
-    router.push('/setup/winning-score');
+    // Seed placeholder player names grouped by team; names.tsx lets the
+    // player edit each one before starting the game.
+    const seeded: string[] = [];
+    teamNames.forEach((teamName, teamIndex) => {
+      for (let p = 0; p < playersPerTeam; p += 1) {
+        seeded.push(`${teamName.trim() || `Team ${teamIndex + 1}`} · Player ${p + 1}`);
+      }
+    });
+    setPlayerNames(seeded);
+    router.push('/setup/names');
   };
 
   return (
     <PaperBackground>
       <NotebookHeader
-        title="Who's Playing?"
-        subtitle="Tap a line to edit a name"
+        title="Name the Teams"
+        subtitle={`${playersPerTeam} players per team`}
         onBack={() => router.back()}
-        step={{ current: currentStep, total: totalSteps }}
+        step={{ current: 3, total: 5 }}
       />
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        {names.map((name, i) => (
+      <View style={styles.container}>
+        {teamNames.map((name, i) => (
           <View key={i} style={styles.field}>
-            <Text style={styles.index}>{i + 1}</Text>
+            <Text style={styles.label}>Team {i + 1}</Text>
             <TextInput
               style={styles.input}
               value={name}
               onChangeText={(text) =>
-                setNames((prev) => prev.map((n, idx) => (idx === i ? text : n)))
+                setTeamNames((prev) => prev.map((n, idx) => (idx === i ? text : n)))
               }
-              placeholder={`Player ${i + 1}`}
+              placeholder={`Team ${i + 1}`}
               placeholderTextColor={colors.paperShadow}
-              maxLength={24}
-              returnKeyType="next"
+              maxLength={20}
+              returnKeyType="done"
             />
           </View>
         ))}
-      </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable
-          style={[styles.button, !allFilled && styles.buttonDisabled]}
-          disabled={!allFilled}
-          onPress={handleNext}
-        >
+        <Pressable style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonLabel}>Continue</Text>
         </Pressable>
       </View>
@@ -73,22 +72,19 @@ export default function NamesStep() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: spacing.lg,
     gap: spacing.lg,
   },
   field: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.xs,
   },
-  index: {
-    width: 24,
+  label: {
     fontSize: typography.sizes.sm,
     color: colors.pencilGray,
     fontWeight: typography.weights.medium as any,
   },
   input: {
-    flex: 1,
     fontSize: typography.sizes.lg,
     fontWeight: typography.weights.semibold as any,
     color: colors.dominoBlack,
@@ -96,17 +92,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: colors.paperShadow,
   },
-  footer: {
-    padding: spacing.lg,
-  },
   button: {
+    marginTop: 'auto',
     paddingVertical: spacing.md,
     borderRadius: radii.md,
     backgroundColor: colors.accentBlue,
     alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.4,
   },
   buttonLabel: {
     fontSize: typography.sizes.md,
