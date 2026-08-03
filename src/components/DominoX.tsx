@@ -22,6 +22,8 @@ export interface DominoXProps {
   /** Number of pencil strokes drawn in this block, 0-10. 10 = fully complete. */
   strokes: number;
   size?: number;
+  /** Tint for the block-complete glow pulse; defaults to the app accent blue. */
+  glowColor?: string;
 }
 
 const STROKES_PER_GROUP = STROKES_PER_BLOCK / 2; // 5 strokes = one tally "X" group = 25 points
@@ -38,7 +40,7 @@ const STROKE_EASING = Easing.out(Easing.quad);
  * + `haptics.scoreMedium()`. The 10th stroke (the full 50-point block) gets
  * a glow pulse + `haptics.completeSuccess()` instead.
  */
-export function DominoX({ strokes, size = 64 }: DominoXProps) {
+export function DominoX({ strokes, size = 64, glowColor = colors.accentBlue }: DominoXProps) {
   const clamped = Math.max(0, Math.min(STROKES_PER_BLOCK, Math.round(strokes)));
   const paths = useMemo(() => buildBlockStrokePaths(size), [size]);
 
@@ -114,7 +116,7 @@ export function DominoX({ strokes, size = 64 }: DominoXProps) {
   return (
     <Animated.View style={[{ width: size, height: size }, containerStyle]}>
       <Canvas style={StyleSheet.absoluteFill}>
-        <RoundedRect x={0} y={0} width={size} height={size} r={size * 0.14} color={colors.accentBlue} opacity={blockGlow}>
+        <RoundedRect x={0} y={0} width={size} height={size} r={size * 0.14} color={glowColor} opacity={blockGlow}>
           <BlurMask blur={size * 0.18} style="normal" />
         </RoundedRect>
         {paths.map((d, i) => (

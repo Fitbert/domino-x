@@ -94,19 +94,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.pencilGray,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   value: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.accentBlue,
   },
   target: {
     fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.medium as any,
+    fontFamily: typography.fontFamily.medium,
     color: colors.pencilGray,
   },
   track: {

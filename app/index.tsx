@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: typography.sizes.xxl,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.dominoBlack,
     letterSpacing: 4,
   },
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.dominoBlack,
   },
   buttonLabelPrimary: {

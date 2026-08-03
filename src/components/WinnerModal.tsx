@@ -277,14 +277,14 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.pencilGray,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
   title: {
     fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.dominoBlack,
     textAlign: 'center',
     marginBottom: spacing.md,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.dominoBlack,
   },
   buttonLabelPrimary: {

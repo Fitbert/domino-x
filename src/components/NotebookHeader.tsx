@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.dominoBlack,
     letterSpacing: 0.3,
   },
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     fontSize: typography.sizes.xs,
     color: colors.pencilGray,
-    fontWeight: typography.weights.medium as any,
+    fontFamily: typography.fontFamily.medium,
   },
   dots: {
     flexDirection: 'row',

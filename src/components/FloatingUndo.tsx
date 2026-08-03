@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   toastText: {
     color: colors.notebookWhite,
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.medium as any,
+    fontFamily: typography.fontFamily.medium,
   },
   button: {
     flexDirection: 'row',
@@ -125,6 +125,6 @@ const styles = StyleSheet.create({
   label: {
     color: colors.notebookWhite,
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
   },
 });

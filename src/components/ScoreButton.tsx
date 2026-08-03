@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.dominoBlack,
   },
 });

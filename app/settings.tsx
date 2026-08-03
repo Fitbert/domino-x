@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.dominoBlack,
   },
   description: {

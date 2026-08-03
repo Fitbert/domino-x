@@ -136,17 +136,17 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: typography.sizes.lg,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.dominoBlack,
   },
   score: {
     fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.accentBlue,
   },
   sectionLabel: {
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.pencilGray,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.pencilGray,
   },
   empty: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   toastText: {
     color: colors.notebookWhite,
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.medium as any,
+    fontFamily: typography.fontFamily.medium,
   },
   undoButton: {
     marginTop: spacing.sm,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   undoLabel: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.notebookWhite,
   },
   undoLabelDisabled: {

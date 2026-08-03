@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   chipValue: {
     fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.dominoBlack,
   },
   chipValueSelected: {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   startLabel: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.notebookWhite,
     letterSpacing: 0.5,
   },

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { FlatList } from 'react-native';
 import { router } from 'expo-router';
 
-import { spacing } from '../src/theme/tokens';
+import { accentForIndex, spacing } from '../src/theme/tokens';
 import { useGameStore } from '../src/store/gameStore';
 import { PaperBackground } from '../src/components/PaperBackground';
 import { GameProgress } from '../src/components/GameProgress';
@@ -46,9 +46,10 @@ export default function GameScreen() {
         data={activeGame.players}
         keyExtractor={(p) => p.id}
         contentContainerStyle={{ gap: spacing.md, padding: spacing.md, paddingBottom: 96 }}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <PlayerCard
             player={item}
+            accentColor={accentForIndex(index)}
             isWinner={item.id === activeGame.winnerId}
             onScorePress={() => setScoreSheetPlayerId(item.id)}
             onHistoryPress={() => setHistoryPlayerId(item.id)}

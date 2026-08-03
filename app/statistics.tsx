@@ -176,12 +176,12 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.accentBlue,
   },
   statLabel: {
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.pencilGray,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -201,13 +201,13 @@ const styles = StyleSheet.create({
   rank: {
     width: 20,
     fontSize: typography.sizes.sm,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.pencilGray,
   },
   rowName: {
     flex: 1,
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.dominoBlack,
   },
   rowStats: {
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   rowWins: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.accentBlue,
   },
   rowGames: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   empty: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.pencilGray,
     textAlign: 'center',
   },

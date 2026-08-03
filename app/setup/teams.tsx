@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   teamNameInput: {
     fontSize: typography.sizes.lg,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.accentBlue,
     paddingVertical: spacing.xs,
     borderBottomWidth: 2,
@@ -140,12 +140,12 @@ const styles = StyleSheet.create({
     width: 20,
     fontSize: typography.sizes.sm,
     color: colors.pencilGray,
-    fontWeight: typography.weights.medium as any,
+    fontFamily: typography.fontFamily.medium,
   },
   input: {
     flex: 1,
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.dominoBlack,
     paddingVertical: spacing.xs,
     borderBottomWidth: 1,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold as any,
+    fontFamily: typography.fontFamily.semibold,
     color: colors.notebookWhite,
   },
 });

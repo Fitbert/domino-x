@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: typography.sizes.lg,
-    fontWeight: typography.weights.bold as any,
+    fontFamily: typography.fontFamily.bold,
     color: colors.dominoBlack,
   },
   cardDescription: {

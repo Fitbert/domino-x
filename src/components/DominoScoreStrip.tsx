@@ -9,6 +9,8 @@ import { DominoX } from './DominoX';
 
 export interface DominoScoreStripProps {
   score: number;
+  /** Tint for the block-complete glow pulse; defaults to the app accent blue. */
+  glowColor?: string;
 }
 
 const BLOCK_SIZE = 64;
@@ -23,7 +25,7 @@ const BLOCK_SIZE = 64;
  * across renders, so it animates its own stroke-by-stroke delta instead of
  * remounting when the strip grows.
  */
-export function DominoScoreStrip({ score }: DominoScoreStripProps) {
+export function DominoScoreStrip({ score, glowColor }: DominoScoreStripProps) {
   const clampedScore = Math.max(0, score);
   const completed = completedBlocks(clampedScore);
   const currentStrokes = strokesInCurrentBlock(clampedScore);
@@ -50,7 +52,11 @@ export function DominoScoreStrip({ score }: DominoScoreStripProps) {
     >
       {Array.from({ length: totalSlots }).map((_, i) => (
         <Animated.View key={i} entering={SlideInRight.duration(MOTION.newBlockSlideInMs)} style={styles.slot}>
-          <DominoX strokes={i < completed ? STROKES_PER_BLOCK : currentStrokes} size={BLOCK_SIZE} />
+          <DominoX
+            strokes={i < completed ? STROKES_PER_BLOCK : currentStrokes}
+            size={BLOCK_SIZE}
+            glowColor={glowColor}
+          />
         </Animated.View>
       ))}
       {/* Trailing spacer keeps the last block from hugging the scroll edge. */}
