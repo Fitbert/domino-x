@@ -15,8 +15,7 @@ import { useSetupWizard } from './_layout';
 export default function WinningScoreStep() {
   const { setup, setWinningScore } = useSetupWizard();
   const startGame = useGameStore((s) => s.startGame);
-  const isTeams = setup.mode === 'teams';
-  const totalSteps = isTeams ? 5 : 4;
+  const totalSteps = 4;
 
   const [selected, setSelected] = useState(setup.winningScore);
 
@@ -26,6 +25,7 @@ export default function WinningScoreStep() {
     startGame({
       mode: setup.mode,
       playerNames: setup.playerNames,
+      memberNames: setup.mode === 'teams' ? setup.teamMembers : undefined,
       winningScore: selected,
     });
     router.replace('/game');

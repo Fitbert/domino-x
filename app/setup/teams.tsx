@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { colors, radii, spacing, typography } from '../../src/theme/tokens';
@@ -9,60 +9,97 @@ import { tapLight } from '../../src/utils/haptics';
 import { useSetupWizard } from './_layout';
 
 /**
- * Step 3 (teams mode only): name the teams. Since GameConfig has no separate
- * team-grouping field, each team's name is folded into its players' names on
- * the Names step (e.g. "Sharks · Alex") — a lightweight way to keep team
- * identity visible on the scorecard without changing the locked data model.
+ * Step 3 (teams mode): name each team and its roster. A team is ONE scoring
+ * entity — this screen produces exactly `teamCount` player names (the teams)
+ * plus a member roster per team for display, so the game screen pools score
+ * per team instead of per person. Routes straight to winning-score, skipping
+ * the individual-mode names step entirely.
  */
 export default function TeamsStep() {
-  const { setup, setPlayerNames } = useSetupWizard();
-  const [teamNames, setTeamNames] = useState<string[]>(
-    Array.from({ length: setup.teamCount }, (_, i) => `Team ${i + 1}`),
-  );
-
+  const { setup, setPlayerNames, setTeamMembers } = useSetupWizard();
   const playersPerTeam = setup.playerCount / setup.teamCount;
 
+  const [teamNames, setTeamNames] = useState<string[]>(() =>
+    setup.playerNames.length === setup.teamCount
+      ? setup.playerNames
+      : Array.from({ length: setup.teamCount }, (_, i) => `Team ${i + 1}`),
+  );
+  const [rosters, setRosters] = useState<string[][]>(() =>
+    setup.teamMembers.length === setup.teamCount
+      ? setup.teamMembers
+      : Array.from({ length: setup.teamCount }, () =>
+          Array.from({ length: playersPerTeam }, () => ''),
+        ),
+  );
+
+  const allFilled =
+    teamNames.every((n) => n.trim().length > 0) &&
+    rosters.every((roster) => roster.every((n) => n.trim().length > 0));
+
   const handleNext = () => {
+    if (!allFilled) return;
     tapLight();
-    // Seed placeholder player names grouped by team; names.tsx lets the
-    // player edit each one before starting the game.
-    const seeded: string[] = [];
-    teamNames.forEach((teamName, teamIndex) => {
-      for (let p = 0; p < playersPerTeam; p += 1) {
-        seeded.push(`${teamName.trim() || `Team ${teamIndex + 1}`} · Player ${p + 1}`);
-      }
-    });
-    setPlayerNames(seeded);
-    router.push('/setup/names');
+    setPlayerNames(teamNames.map((n) => n.trim()));
+    setTeamMembers(rosters.map((roster) => roster.map((n) => n.trim())));
+    router.push('/setup/winning-score');
   };
 
   return (
     <PaperBackground>
       <NotebookHeader
         title="Name the Teams"
-        subtitle={`${playersPerTeam} players per team`}
+        subtitle={`${playersPerTeam} players per team, one shared score`}
         onBack={() => router.back()}
-        step={{ current: 3, total: 5 }}
+        step={{ current: 3, total: 4 }}
       />
-      <View style={styles.container}>
-        {teamNames.map((name, i) => (
-          <View key={i} style={styles.field}>
-            <Text style={styles.label}>Team {i + 1}</Text>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        {teamNames.map((teamName, teamIndex) => (
+          <View key={teamIndex} style={styles.teamCard}>
             <TextInput
-              style={styles.input}
-              value={name}
+              style={styles.teamNameInput}
+              value={teamName}
               onChangeText={(text) =>
-                setTeamNames((prev) => prev.map((n, idx) => (idx === i ? text : n)))
+                setTeamNames((prev) => prev.map((n, i) => (i === teamIndex ? text : n)))
               }
-              placeholder={`Team ${i + 1}`}
+              placeholder={`Team ${teamIndex + 1}`}
               placeholderTextColor={colors.paperShadow}
               maxLength={20}
-              returnKeyType="done"
+              returnKeyType="next"
             />
+            <View style={styles.rosterList}>
+              {rosters[teamIndex].map((memberName, memberIndex) => (
+                <View key={memberIndex} style={styles.field}>
+                  <Text style={styles.index}>{memberIndex + 1}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={memberName}
+                    onChangeText={(text) =>
+                      setRosters((prev) =>
+                        prev.map((roster, i) =>
+                          i === teamIndex
+                            ? roster.map((n, j) => (j === memberIndex ? text : n))
+                            : roster,
+                        ),
+                      )
+                    }
+                    placeholder={`Player ${memberIndex + 1}`}
+                    placeholderTextColor={colors.paperShadow}
+                    maxLength={24}
+                    returnKeyType="next"
+                  />
+                </View>
+              ))}
+            </View>
           </View>
         ))}
+      </ScrollView>
 
-        <Pressable style={styles.button} onPress={handleNext}>
+      <View style={styles.footer}>
+        <Pressable
+          style={[styles.button, !allFilled && styles.buttonDisabled]}
+          disabled={!allFilled}
+          onPress={handleNext}
+        >
           <Text style={styles.buttonLabel}>Continue</Text>
         </Pressable>
       </View>
@@ -72,32 +109,59 @@ export default function TeamsStep() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: spacing.lg,
     gap: spacing.lg,
   },
-  field: {
-    gap: spacing.xs,
+  teamCard: {
+    backgroundColor: colors.notebookWhite,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.paperShadow,
+    padding: spacing.md,
+    gap: spacing.md,
   },
-  label: {
+  teamNameInput: {
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.weights.bold as any,
+    color: colors.accentBlue,
+    paddingVertical: spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.paperShadow,
+  },
+  rosterList: {
+    gap: spacing.sm,
+  },
+  field: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  index: {
+    width: 20,
     fontSize: typography.sizes.sm,
     color: colors.pencilGray,
     fontWeight: typography.weights.medium as any,
   },
   input: {
-    fontSize: typography.sizes.lg,
+    flex: 1,
+    fontSize: typography.sizes.md,
     fontWeight: typography.weights.semibold as any,
     color: colors.dominoBlack,
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 2,
+    paddingVertical: spacing.xs,
+    borderBottomWidth: 1,
     borderBottomColor: colors.paperShadow,
   },
+  footer: {
+    padding: spacing.lg,
+  },
   button: {
-    marginTop: 'auto',
     paddingVertical: spacing.md,
     borderRadius: radii.md,
     backgroundColor: colors.accentBlue,
     alignItems: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.4,
   },
   buttonLabel: {
     fontSize: typography.sizes.md,

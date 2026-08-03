@@ -13,12 +13,9 @@ function seedNames(setup: { playerCount: number; playerNames: string[] }): strin
   return Array.from({ length: setup.playerCount }, (_, i) => `Player ${i + 1}`);
 }
 
-/** Step (3 or 4): who's playing — one text field per player, notebook-ruled. */
+/** Step 3 (individual mode only): who's playing — one text field per player, notebook-ruled. */
 export default function NamesStep() {
   const { setup, setPlayerNames } = useSetupWizard();
-  const isTeams = setup.mode === 'teams';
-  const totalSteps = isTeams ? 5 : 4;
-  const currentStep = isTeams ? 4 : 3;
 
   const [names, setNames] = useState<string[]>(() => seedNames(setup));
 
@@ -37,7 +34,7 @@ export default function NamesStep() {
         title="Who's Playing?"
         subtitle="Tap a line to edit a name"
         onBack={() => router.back()}
-        step={{ current: currentStep, total: totalSteps }}
+        step={{ current: 3, total: 4 }}
       />
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         {names.map((name, i) => (

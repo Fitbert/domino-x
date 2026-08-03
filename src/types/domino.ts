@@ -17,6 +17,8 @@ export interface Player {
   name: string;
   score: number;
   history: ScoreEntry[];
+  /** Teams mode only: display names of this team's members. */
+  members?: string[];
 }
 
 export interface GameConfig {
@@ -33,4 +35,6 @@ export interface NewGameOptions {
   mode: GameMode;
   playerNames: string[];
   winningScore: number;
+  /** Teams mode only: member names per team, aligned by index with playerNames. */
+  memberNames?: string[][];
 }

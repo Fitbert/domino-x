@@ -10,7 +10,10 @@ export interface SetupWizardState {
   playerCount: number;
   /** Only meaningful when mode === 'teams'. */
   teamCount: number;
+  /** Individual mode: each player's name. Teams mode: each team's name. */
   playerNames: string[];
+  /** Teams mode only: each team's member names, aligned by index with playerNames. */
+  teamMembers: string[][];
   winningScore: number;
 }
 
@@ -20,6 +23,7 @@ interface SetupWizardContextValue {
   setPlayerCount: (count: number) => void;
   setTeamCount: (count: number) => void;
   setPlayerNames: (names: string[]) => void;
+  setTeamMembers: (members: string[][]) => void;
   setWinningScore: (score: number) => void;
 }
 
@@ -28,6 +32,7 @@ const DEFAULT_STATE: SetupWizardState = {
   playerCount: 2,
   teamCount: 2,
   playerNames: [],
+  teamMembers: [],
   winningScore: DEFAULT_WINNING_SCORE,
 };
 
@@ -47,9 +52,10 @@ export function useSetupWizard(): SetupWizardContextValue {
 }
 
 /**
- * One-decision-per-screen setup flow: game mode -> players -> teams (if
- * applicable) -> names -> winning score -> start. Each transition slides in
- * from the right; NotebookHeader's step prop renders the progress dots.
+ * One-decision-per-screen setup flow: game mode -> players -> names (individual)
+ * or teams+rosters (teams) -> winning score -> start. Both paths are 4 steps.
+ * Each transition slides in from the right; NotebookHeader's step prop renders
+ * the progress dots.
  */
 export default function SetupLayout() {
   const [setup, setSetup] = useState<SetupWizardState>(DEFAULT_STATE);
@@ -61,6 +67,7 @@ export default function SetupLayout() {
       setPlayerCount: (playerCount) => setSetup((s) => ({ ...s, playerCount })),
       setTeamCount: (teamCount) => setSetup((s) => ({ ...s, teamCount })),
       setPlayerNames: (playerNames) => setSetup((s) => ({ ...s, playerNames })),
+      setTeamMembers: (teamMembers) => setSetup((s) => ({ ...s, teamMembers })),
       setWinningScore: (winningScore) => setSetup((s) => ({ ...s, winningScore })),
     }),
     [setup],

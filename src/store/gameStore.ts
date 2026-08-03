@@ -6,8 +6,11 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function makePlayers(names: string[]): Player[] {
-  return names.map((name) => ({ id: makeId(), name, score: 0, history: [] }));
+function makePlayers(names: string[], memberNames?: string[][]): Player[] {
+  return names.map((name, i) => {
+    const members = memberNames?.[i];
+    return { id: makeId(), name, score: 0, history: [], ...(members?.length ? { members } : {}) };
+  });
 }
 
 // Monotonic timestamp source for ScoreEntry.timestamp. Two players can tap
@@ -82,7 +85,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       id: makeId(),
       mode: options.mode,
       winningScore: options.winningScore,
-      players: makePlayers(options.playerNames),
+      players: makePlayers(options.playerNames, options.memberNames),
       createdAt: Date.now(),
       winnerId: null,
       completedAt: null,
@@ -175,6 +178,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().startGame({
       mode: activeGame.mode,
       playerNames: activeGame.players.map((p) => p.name),
+      memberNames: activeGame.players.map((p) => p.members ?? []),
       winningScore: activeGame.winningScore,
     });
   },

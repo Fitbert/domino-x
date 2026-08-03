@@ -17,7 +17,7 @@ const TEAM_OPTIONS = [
 export default function PlayersStep() {
   const { setup, setPlayerCount, setTeamCount } = useSetupWizard();
   const isTeams = setup.mode === 'teams';
-  const totalSteps = isTeams ? 5 : 4;
+  const totalSteps = 4;
 
   const chooseIndividual = (count: number) => {
     tapLight();

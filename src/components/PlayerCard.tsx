@@ -86,9 +86,16 @@ export function PlayerCard({ player, isWinner, onScorePress, onHistoryPress }: P
         }}
       >
         <View style={styles.header}>
-          <Text style={styles.name} numberOfLines={1}>
-            {player.name}
-          </Text>
+          <View style={styles.nameColumn}>
+            <Text style={styles.name} numberOfLines={1}>
+              {player.name}
+            </Text>
+            {player.members && player.members.length > 0 ? (
+              <Text style={styles.members} numberOfLines={1}>
+                {player.members.join(' & ')}
+              </Text>
+            ) : null}
+          </View>
           <Text style={styles.score}>{displayScore}</Text>
         </View>
         <View style={styles.stripWrap}>
@@ -124,12 +131,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  name: {
+  nameColumn: {
     flex: 1,
+    marginRight: spacing.sm,
+  },
+  name: {
     fontSize: typography.sizes.lg,
     fontWeight: typography.weights.bold as any,
     color: colors.dominoBlack,
-    marginRight: spacing.sm,
+  },
+  members: {
+    fontSize: typography.sizes.sm,
+    color: colors.pencilGray,
+    marginTop: 1,
   },
   score: {
     fontSize: typography.sizes.xxl,
